@@ -16,10 +16,46 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.add('light-mode');
     }
 
-    themeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('light-mode');
-        const isLight = document.body.classList.contains('light-mode');
-        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    themeToggle.addEventListener('click', (e) => {
+        const willBeLight = !document.body.classList.contains('light-mode');
+        const overlayColor = willBeLight ? '#faf3eb' : '#1a120d';
+
+        // Get toggle button position for the reveal origin
+        const rect = themeToggle.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+
+        // Calculate the circle size needed to cover the whole screen
+        const maxDist = Math.hypot(
+            Math.max(x, window.innerWidth - x),
+            Math.max(y, window.innerHeight - y)
+        );
+        const diameter = maxDist * 2;
+
+        // Create circular overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'theme-transition-overlay';
+        overlay.style.background = overlayColor;
+        overlay.style.width = diameter + 'px';
+        overlay.style.height = diameter + 'px';
+        overlay.style.left = (x - diameter / 2) + 'px';
+        overlay.style.top = (y - diameter / 2) + 'px';
+        document.body.appendChild(overlay);
+
+        // Start expanding
+        requestAnimationFrame(() => {
+            overlay.classList.add('expanding');
+        });
+
+        // Switch theme once the circle covers the screen
+        setTimeout(() => {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        }, 500);
+
+        // Remove overlay after animation finishes
+        overlay.addEventListener('animationend', () => overlay.remove());
     });
 
     menuToggle.addEventListener('click', () => {
